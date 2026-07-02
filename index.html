@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YJEJYCXZH3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YJEJYCXZH3');
+    </script>
+
+    <title>MCP Install — one button, every MCP client</title>
+    <meta name="description" content="The universal install button for MCP servers. One link that installs your server in every major and niche MCP client — deep links, CLI commands, config snippets, and web connectors — driven by an open registry of client install methods. An API Commons tool." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <a href="/"><strong>MCP Install</strong></a>
+        <span class="tag">one button, every MCP client</span>
+      </div>
+      <nav>
+        <a href="/clients.json" title="The open registry of MCP client install methods">Client registry</a>
+        <a href="https://apis.io" target="_blank" rel="noopener">APIs.io</a>
+        <a href="https://apicommons.org" target="_blank" rel="noopener">API Commons</a>
+        <a href="https://github.com/api-commons/mcp-install" target="_blank" rel="noopener">GitHub</a>
+        <button id="engage-ae" class="engage-btn" type="button" title="Work with API Evangelist on MCP enablement, onboarding, and governance">Get help</button>
+      </nav>
+    </header>
+
+    <main id="app" class="layout"></main>
+
+    <footer class="footer">
+      <p><a href="https://apicommons.org" target="_blank" rel="noopener">API Commons</a> tooling, Apache-2.0. The
+      <a href="/clients.json">client install registry</a> (<a href="/clients.schema.json">schema</a>) is open data —
+      <a href="https://github.com/api-commons/mcp-install" target="_blank" rel="noopener">PRs welcome</a> for new clients and corrections.
+      Servers are defined by <a href="https://modelcontextprotocol.io/registry/about" target="_blank" rel="noopener">MCP Registry</a> server.json.</p>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
