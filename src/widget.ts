@@ -39,8 +39,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const STYLES = `
   :host { display: inline-block; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; position: relative; }
+  /* Embedders can size the trigger button to match their own buttons by setting
+     these custom properties on the host (e.g. style="--mcp-btn-font-size:1.25rem").
+     Defaults preserve the original look. */
   .btn { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; border: 1px solid transparent;
-    border-radius: 8px; padding: .55rem 1rem; font-size: .9rem; font-weight: 600;
+    border-radius: var(--mcp-btn-radius, 8px); padding: var(--mcp-btn-pad-y, .55rem) var(--mcp-btn-pad-x, 1rem);
+    font-size: var(--mcp-btn-font-size, .9rem); line-height: var(--mcp-btn-line-height, 1.5); font-weight: 600;
     background: #0b1220; color: #fff; }
   .btn svg { flex: none; }
   .btn:hover { background: #16233f; }
