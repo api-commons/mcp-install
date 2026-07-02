@@ -80,3 +80,4 @@ Vanilla TypeScript + Vite, no runtime dependencies. Deploys to GitHub Pages on p
 ## License
 
 Apache-2.0. Free, open tooling from [API Commons](https://apicommons.org); expert services behind it from [API Evangelist](https://apievangelist.com/services/).
+
