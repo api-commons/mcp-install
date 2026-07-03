@@ -78,6 +78,13 @@ export function renderGenerator(app: HTMLElement): void {
 
       <section class="pane">
         <h2>2 · Take your button</h2>
+        <div class="style-row">
+          <span class="opt-label">Button color</span>
+          <div class="swatches" id="swatches"></div>
+          <input type="color" id="f-color" value="#3098d8" aria-label="Pick button color" />
+          <input type="text" id="f-color-hex" value="#3098d8" class="hex-input" spellcheck="false"
+            maxlength="7" aria-label="Button color hex" />
+        </div>
         <div class="preview-box">
           <div class="opt-label">Live preview — this is the real embeddable component</div>
           <div id="preview"></div>
@@ -90,7 +97,8 @@ export function renderGenerator(app: HTMLElement): void {
   const $ = <T extends HTMLElement>(sel: string) => app.querySelector<T>(sel)!;
   const inputs = app.querySelectorAll<HTMLElement>('input, textarea, select');
 
-  const state: { registryName?: string; serverJsonUrl?: string } = {};
+  const DEFAULT_COLOR = '#3098d8';
+  const state: { registryName?: string; serverJsonUrl?: string; color: string } = { color: DEFAULT_COLOR };
 
   const readDef = (): ServerDef | undefined => {
     const name = $<HTMLInputElement>('#f-name').value.trim();
@@ -135,6 +143,7 @@ export function renderGenerator(app: HTMLElement): void {
       def,
       registryName: carry === 'name' ? state.registryName : undefined,
       serverJsonUrl: carry === 'server' ? state.serverJsonUrl : undefined,
+      color: state.color,
     };
 
     // Rebuild the component so it re-resolves the fresh config.
@@ -142,6 +151,7 @@ export function renderGenerator(app: HTMLElement): void {
     const el = document.createElement('mcp-install-button');
     el.setAttribute('config', encodeServerDef(def));
     el.setAttribute('registry', `${location.origin}/clients.json`);
+    if (state.color.toLowerCase() !== DEFAULT_COLOR) el.setAttribute('color', state.color);
     preview.appendChild(el);
 
     const { clients } = await loadClients();
@@ -158,6 +168,52 @@ export function renderGenerator(app: HTMLElement): void {
 
   inputs.forEach((el) => el.addEventListener('input', () => void update()));
   app.querySelectorAll<HTMLInputElement>('input[name=carry]').forEach((el) => el.addEventListener('change', () => void update()));
+
+  // ------------------------------------------------------------ button color
+  const colorInput = $<HTMLInputElement>('#f-color');
+  const hexInput = $<HTMLInputElement>('#f-color-hex');
+  const swatchWrap = $<HTMLElement>('#swatches');
+
+  const PRESETS = [
+    ['API Commons blue', '#3098d8'],
+    ['Ink', '#0b1220'],
+    ['Slate', '#334155'],
+    ['Emerald', '#059669'],
+    ['Violet', '#7c3aed'],
+    ['Rose', '#e11d48'],
+    ['Amber', '#d97706'],
+  ] as const;
+
+  const normHex = (v: string): string | undefined => {
+    const s = v.trim().replace(/^#/, '');
+    if (/^[0-9a-fA-F]{3}$/.test(s)) return '#' + s.split('').map((c) => c + c).join('').toLowerCase();
+    if (/^[0-9a-fA-F]{6}$/.test(s)) return '#' + s.toLowerCase();
+    return undefined;
+  };
+
+  swatchWrap.innerHTML = PRESETS.map(
+    ([name, hex]) => `<button type="button" class="swatch" data-hex="${hex}" title="${esc(name)}" style="background:${hex}"></button>`
+  ).join('');
+
+  const applyColor = (hex: string, syncPicker = true) => {
+    state.color = hex;
+    hexInput.value = hex;
+    if (syncPicker) colorInput.value = hex;
+    swatchWrap.querySelectorAll<HTMLElement>('.swatch').forEach((s) =>
+      s.classList.toggle('active', s.dataset.hex?.toLowerCase() === hex.toLowerCase())
+    );
+    void update();
+  };
+
+  colorInput.addEventListener('input', () => applyColor(colorInput.value, false));
+  hexInput.addEventListener('input', () => {
+    const hex = normHex(hexInput.value);
+    if (hex) applyColor(hex);
+  });
+  swatchWrap.querySelectorAll<HTMLElement>('.swatch').forEach((s) =>
+    s.addEventListener('click', () => applyColor(s.dataset.hex!))
+  );
+  applyColor(DEFAULT_COLOR);
 
   // ------------------------------------------------------------ imports
   const status = $<HTMLElement>('#imp-status');

@@ -32,7 +32,7 @@ The dynamic in-page button with the client picker, self-contained, no framework:
 <mcp-install-button name="io.github.acme/acme-mcp"></mcp-install-button>
 ```
 
-Attributes: `name` / `server` / `config` (one of, as above), `label`, `clients` (comma-separated ids to limit the menu), `theme="light"`, `registry` (override the clients.json URL — point it at your fork).
+Attributes: `name` / `server` / `config` (one of, as above), `label`, `clients` (comma-separated ids to limit the menu), `theme="light"`, `color="#hex"` (accent color for the button — readable text color and hover are derived automatically), `registry` (override the clients.json URL — point it at your fork).
 
 ### 4. The generator
 

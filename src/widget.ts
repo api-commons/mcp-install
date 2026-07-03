@@ -13,6 +13,7 @@
 //   clients  — comma-separated client ids to limit the menu to
 //   registry — override the clients.json URL
 //   theme    — "dark" (default) or "light"
+//   color    — accent hex (e.g. "#3098d8") for the trigger button + menu accents
 
 import type { ClientDef, InstallOption, ServerDef } from './types';
 import { detectOS, installOptions } from './actions';
@@ -45,10 +46,10 @@ const STYLES = `
   .btn { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; border: 1px solid transparent;
     border-radius: var(--mcp-btn-radius, 8px); padding: var(--mcp-btn-pad-y, .55rem) var(--mcp-btn-pad-x, 1rem);
     font-size: var(--mcp-btn-font-size, .9rem); line-height: var(--mcp-btn-line-height, 1.5); font-weight: 600;
-    background: #0b1220; color: #fff; }
+    background: var(--mcp-btn-bg, #0b1220); color: var(--mcp-btn-color, #fff); }
   .btn svg { flex: none; }
-  .btn:hover { background: #16233f; }
-  :host([theme="light"]) .btn { background: #fff; color: #0b1220; border-color: #cbd5e1; }
+  .btn:hover { background: var(--mcp-btn-bg-hover, #16233f); }
+  :host([theme="light"]) .btn { background: var(--mcp-btn-bg, #fff); color: var(--mcp-btn-color, #0b1220); border-color: #cbd5e1; }
   .panel { position: absolute; z-index: 9999; top: calc(100% + 6px); left: 0; min-width: 340px; max-width: 420px;
     max-height: 420px; overflow-y: auto; background: #fff; color: #0f172a; border: 1px solid #dbe2ea;
     border-radius: 10px; box-shadow: 0 12px 32px rgba(2, 8, 23, .18); padding: .4rem; }
@@ -58,7 +59,7 @@ const STYLES = `
     background: none; border: 0; font: inherit; font-size: .85rem; cursor: pointer; text-align: left;
     color: inherit; text-decoration: none; border-radius: 8px; box-sizing: border-box; }
   .row > .head:hover { background: #f1f5f9; }
-  .row .go { margin-left: auto; color: #3098d8; font-size: .8rem; white-space: nowrap; }
+  .row .go { margin-left: auto; color: var(--mcp-accent, #3098d8); font-size: .8rem; white-space: nowrap; }
   .detail { padding: .3rem .6rem .6rem; }
   .detail .where { font-size: .72rem; color: #475569; margin: 0 0 .3rem; }
   pre { margin: 0; padding: .5rem .6rem; background: #0b1220; color: #e2e8f0; border-radius: 8px;
@@ -71,7 +72,7 @@ const STYLES = `
   .note { font-size: .7rem; color: #64748b; margin: .35rem 0 0; }
   .foot { display: flex; justify-content: space-between; align-items: center; gap: .5rem;
     padding: .5rem .6rem .3rem; border-top: 1px solid #e2e8f0; margin-top: .3rem; }
-  .foot a { font-size: .74rem; color: #3098d8; text-decoration: none; }
+  .foot a { font-size: .74rem; color: var(--mcp-accent, #3098d8); text-decoration: none; }
   .muted { font-size: .68rem; color: #94a3b8; }
   .status { padding: .6rem; font-size: .8rem; color: #475569; }
 `;
@@ -101,12 +102,29 @@ export class MCPInstallButtonElement extends HTMLElement {
 
   private render(): void {
     const label = this.getAttribute('label') ?? 'Install MCP Server';
+    this.applyColor();
     this.root.innerHTML = `
       <style>${STYLES}</style>
       <button class="btn" type="button" aria-haspopup="true" aria-expanded="false">${ICON}<span>${esc(label)}</span></button>
       <div class="panel" hidden></div>
     `;
     this.root.querySelector('.btn')!.addEventListener('click', () => this.toggle(!this.open));
+  }
+
+  // Map the `color` attribute onto the button/menu accent custom properties,
+  // picking a readable text color and a slightly darker hover automatically.
+  private applyColor(): void {
+    const hex = normalizeHex(this.getAttribute('color'));
+    if (!hex) {
+      for (const p of ['--mcp-btn-bg', '--mcp-btn-bg-hover', '--mcp-btn-color', '--mcp-accent']) {
+        this.style.removeProperty(p);
+      }
+      return;
+    }
+    this.style.setProperty('--mcp-btn-bg', hex);
+    this.style.setProperty('--mcp-btn-bg-hover', darken(hex, 0.14));
+    this.style.setProperty('--mcp-btn-color', textOn(hex));
+    this.style.setProperty('--mcp-accent', hex);
   }
 
   private toggle(open: boolean): void {
@@ -217,6 +235,36 @@ function renderDetail(option: InstallOption): string {
 
 function note(text?: string): string {
   return text ? `<p class="note">${esc(text)}</p>` : '';
+}
+
+// Accept #rgb / #rrggbb (with or without the hash) → normalized #rrggbb, else undefined.
+function normalizeHex(raw: string | null): string | undefined {
+  if (!raw) return undefined;
+  const v = raw.trim().replace(/^#/, '');
+  if (/^[0-9a-fA-F]{3}$/.test(v)) return '#' + v.split('').map((c) => c + c).join('').toLowerCase();
+  if (/^[0-9a-fA-F]{6}$/.test(v)) return '#' + v.toLowerCase();
+  return undefined;
+}
+
+function rgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+// White on dark colors, near-black on light ones (WCAG relative luminance).
+function textOn(hex: string): string {
+  const [r, g, b] = rgb(hex).map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  });
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 0.42 ? '#0b1220' : '#ffffff';
+}
+
+function darken(hex: string, amount: number): string {
+  const to = (c: number) => Math.max(0, Math.round(c * (1 - amount)));
+  const [r, g, b] = rgb(hex).map(to);
+  return '#' + [r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('');
 }
 
 if (!customElements.get('mcp-install-button')) {
