@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://install.apicommons.org/clients.schema.json",
+  "title": "MCP Client Install Registry",
+  "description": "A machine-readable registry of how MCP clients install servers — deep links, CLI commands, config files, and web connectors.",
+  "type": "object",
+  "required": ["name", "version", "clients"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "version": { "type": "string" },
+    "url": { "type": "string", "format": "uri" },
+    "source": { "type": "string", "format": "uri" },
+    "clients": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/client" }
+    }
+  },
+  "$defs": {
+    "client": {
+      "type": "object",
+      "required": ["id", "name", "category", "transports"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "name": { "type": "string" },
+        "maker": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": ["deeplink", "cli", "config", "connector"],
+          "description": "The best install mechanism the client offers: one-click deep link, CLI command, config file/UI, or web connector settings."
+        },
+        "transports": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["stdio", "http", "sse"] }
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["mac", "windows", "linux", "web", "ios", "android"] }
+        },
+        "website": { "type": "string", "format": "uri" },
+        "docs": { "type": "string", "format": "uri" },
+        "deeplink": { "$ref": "#/$defs/deeplink" },
+        "cli": { "$ref": "#/$defs/cli" },
+        "config": { "$ref": "#/$defs/config" },
+        "connector": { "$ref": "#/$defs/connector" },
+        "notes": { "type": "string" }
+      }
+    },
+    "deeplink": {
+      "type": "object",
+      "required": ["builder"],
+      "properties": {
+        "builder": {
+          "type": "string",
+          "enum": ["cursor", "vscode", "vscode-insiders", "visual-studio", "lmstudio", "goose"],
+          "description": "Named URL-construction strategy implemented by consumers of this registry. Each is documented in the repo README."
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "cli": {
+      "type": "object",
+      "description": "Shell command templates. Tokens: {name} {command} {args} {url} {envFlags} {headerFlags} {jsonWithName}.",
+      "properties": {
+        "stdio": { "type": "string" },
+        "http": { "type": "string" },
+        "sse": { "type": "string" },
+        "envFlag": { "type": "string", "description": "Per-variable flag template with {key}/{value}, expanded into {envFlags}." },
+        "headerFlag": { "type": "string", "description": "Per-header flag template with {key}/{value}, expanded into {headerFlags}." },
+        "note": { "type": "string" }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": ["format"],
+      "properties": {
+        "format": { "type": "string", "enum": ["json", "yaml", "toml"] },
+        "rootKey": { "type": "string", "description": "Top-level key the server entry nests under (mcpServers, servers, context_servers, mcp_servers, mcp)." },
+        "style": {
+          "type": "string",
+          "enum": ["default", "vscode", "zed", "continue", "toml", "opencode"],
+          "description": "Named snippet shape implemented by consumers of this registry."
+        },
+        "urlKey": { "type": "string", "description": "Key that carries a remote URL when not simply \"url\" (e.g. Windsurf's serverUrl)." },
+        "paths": {
+          "type": "object",
+          "properties": {
+            "mac": { "type": "string" },
+            "windows": { "type": "string" },
+            "linux": { "type": "string" }
+          }
+        },
+        "location": { "type": "string", "description": "Where to put the snippet when it's UI-managed rather than a fixed path." },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" }
+      }
+    },
+    "connector": {
+      "type": "object",
+      "required": ["steps"],
+      "properties": {
+        "requires": { "type": "string", "enum": ["remote", "any"], "description": "\"remote\" means the client can only attach hosted http/sse servers." },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}
