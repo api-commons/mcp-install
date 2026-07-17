@@ -81,3 +81,14 @@ Vanilla TypeScript + Vite, no runtime dependencies. Deploys to GitHub Pages on p
 
 Apache-2.0. Free, open tooling from [API Commons](https://apicommons.org); expert services behind it from [API Evangelist](https://apievangelist.com/services/).
 
+## Part of API Commons
+
+An open, browser-first tool from **[API Commons](https://apicommons.org)** — free, no backend, your data stays in your browser. Browse the full set at **[apicommons.org/tools](https://apicommons.org/tools/)**.
+
+**Related tools**
+- [Toolsmith](https://toolsmith.apicommons.org) — forge MCP tools + Agent Skills from OpenAPI
+- [Context Gate](https://contextgate.apicommons.org) — consumer-centric governance for agent context
+- [API Discovery](https://discovery.apicommons.org) — browser-first registry for API artifacts
+- [API Documentation](https://documentation.apicommons.org) — portable HTML docs for any APIs.json
+- [API Validator](https://validator.apicommons.org) — lint OpenAPI/AsyncAPI/Arazzo/JSON Schema in-browser
+
